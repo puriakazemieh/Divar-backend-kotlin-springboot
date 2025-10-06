@@ -40,7 +40,7 @@ fun initLocation(context: ConfigurableApplicationContext) {
 
 fun initCategory(context: ConfigurableApplicationContext) {
     val service = context.getBean(CategoryService::class.java)
-    service.repository.deleteAll()
+//    service.repository.deleteAll()
     if (service.count() < 1) {
         service.saveAll(CategoryDataProvider.getData())
     }

@@ -24,4 +24,13 @@ class NeighborhoodService(
     fun count(): Long {
         return repository.count()
     }
+
+    fun getReferenceById(id: Long): Neighborhood? {
+        return try {
+            repository.getReferenceById(id)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
 }

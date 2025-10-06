@@ -1,5 +1,6 @@
 package com.kazemieh.divar.core.parameter.service
 
+import com.kazemieh.divar.core.category.entity.Category
 import com.kazemieh.divar.core.category.service.CategoryService
 import com.kazemieh.divar.core.parameter.entity.Parameter
 import com.kazemieh.divar.core.parameter.repository.ParameterRepository
@@ -49,5 +50,14 @@ class ParameterService(
 
     fun saveAll(values: List<Parameter>) {
         repository.saveAll(values)
+    }
+
+
+    fun getReferenceById(id: Long): Parameter? {
+        return try {
+            repository.getReferenceById(id)
+        } catch (e: Exception) {
+            null
+        }
     }
 }

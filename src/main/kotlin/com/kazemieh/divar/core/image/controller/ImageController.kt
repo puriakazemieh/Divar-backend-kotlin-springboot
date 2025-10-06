@@ -13,7 +13,7 @@ class ImageController(
     val service: ImageService
 ) {
 
-    @PostMapping("image/upload")
+   /* @PostMapping("image/upload")
     fun uploadImage(
         @RequestParam("file") file: MultipartFile? = null,
     ): String {
@@ -22,6 +22,6 @@ class ImageController(
             val image = service.save(file)
             image.path
         }
-    }
+    }*/
 
 }

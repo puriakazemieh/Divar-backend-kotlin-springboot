@@ -30,4 +30,12 @@ class CategoryService(
         return repository.count()
     }
 
+    fun getReferenceById(id: Long): Category? {
+        return try {
+            repository.getReferenceById(id)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
 }

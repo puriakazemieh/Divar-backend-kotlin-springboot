@@ -12,6 +12,12 @@ data class Category(
     @JoinColumn(name = "parent_id", nullable = true)
     val parent: Category? = null,
 
+// برای اینکه اگر دسته بندی رو حذف کردیم همه دسته بندی های داخلی اون هم حذف بشه
+//    @OneToMany(
+//        mappedBy = "parent",
+//        cascade = [CascadeType.ALL],
+//        orphanRemoval = true
+//    )
     @OneToMany(mappedBy = "parent")
     val children: List<Category> = listOf()
 )

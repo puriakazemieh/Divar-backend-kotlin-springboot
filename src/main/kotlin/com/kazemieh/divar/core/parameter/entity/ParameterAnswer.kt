@@ -1,6 +1,6 @@
 package com.kazemieh.divar.core.parameter.entity
 
-import com.kazemieh.divar.core.adds.entity.Adds
+import com.kazemieh.divar.core.adds.entity.Ads
 import jakarta.persistence.*
 
 @Entity(name = "Parameter_answer")
@@ -10,11 +10,11 @@ data class ParameterAnswer(
     val answer: String,
 
     @ManyToOne()
-    @JoinColumn(name = "adds_id")
-    val adds: Adds,
+    @JoinColumn(name = "ads_id")
+    val ads: Ads,
 
     @ManyToOne()
-    @JoinColumn(name = "parameter_id")
+    @JoinColumn(name = "parameter_id", nullable = true)
     val parameter: Parameter,
 
     )
