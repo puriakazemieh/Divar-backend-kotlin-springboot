@@ -18,6 +18,12 @@ data class Ads(
     val description: String,
     val price: String,
 
+    @CreationTimestamp
+    val createdAt: Instant? = null,
+
+    @CreationTimestamp
+    val updateAt: Instant? = null,
+
     @ManyToOne
     @JoinColumn(name = "neighborhood_id")
     val neighborhood: Neighborhood,

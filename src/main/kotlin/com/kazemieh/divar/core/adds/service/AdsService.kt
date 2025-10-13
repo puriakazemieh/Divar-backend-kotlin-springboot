@@ -16,6 +16,10 @@ import com.kazemieh.divar.utils.response.ApiResponse
 import com.kazemieh.divar.utils.response.BadRequestError
 import com.kazemieh.divar.utils.response.UnauthorizedError
 import com.kazemieh.divar.utils.security.JwtService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -59,11 +63,23 @@ class AdsService(
         return ApiResponse.success(ads.toResponse())
     }
 
-    fun findAll(): List<Ads> {
-        return repository.findAll()
+    fun findAll(page: Int, pageSize: Int = 20): Page<Ads> {
+        val pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"))
+        return repository.findAll(pageable)
+    }
+
+    fun findAll(page: Int, pageSize: Int = 20, categoryId: Long): Page<Ads> {
+        val pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"))
+        return repository.findAllByCategoryId(categoryId, pageable)
     }
 
     fun saveAll(values: List<Ads>) {
         repository.saveAll(values)
     }
+
+    fun findById(id: Long): Ads? {
+        return repository.findByIdOrNull(id)
+    }
+
+
 }

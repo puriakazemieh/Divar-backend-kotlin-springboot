@@ -6,12 +6,12 @@ import com.kazemieh.divar.core.parameter.entity.ParameterAnswer
 
 data class ParameterAnswerResponse(
     val answer: String,
-    val parameterResponse: ParameterResponse,
+    val parameter: ParameterResponse,
 )
 
 fun ParameterAnswer.toResponse(): ParameterAnswerResponse {
     return ParameterAnswerResponse(
         answer = answer,
-        parameterResponse = parameter.toResponse()
+        parameter = parameter.toResponse(false)
     )
 }
