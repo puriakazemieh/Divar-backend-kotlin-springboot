@@ -1,6 +1,7 @@
 package com.kazemieh.divar.core.adds.service
 
 import com.kazemieh.divar.core.adds.dto.AdsRequest
+import com.kazemieh.divar.core.adds.dto.CategoriesOfAds
 import com.kazemieh.divar.core.adds.dto.toEntity
 import com.kazemieh.divar.core.adds.dto.toResponse
 import com.kazemieh.divar.core.adds.entity.Ads
@@ -79,6 +80,17 @@ class AdsService(
 
     fun findById(id: Long): Ads? {
         return repository.findByIdOrNull(id)
+    }
+
+    fun findCategoriesWithAdsCount(searchTerm: String): List<CategoriesOfAds> {
+        return repository.findCategoriesWithAdsCount(searchTerm).map {
+            CategoriesOfAds(
+                categoryName = it[0] as String,
+                categoryId = it[1] as Long,
+                adsCount = it[2] as Long,
+                adsTitle = it[3] as String,
+            )
+        }
     }
 
 

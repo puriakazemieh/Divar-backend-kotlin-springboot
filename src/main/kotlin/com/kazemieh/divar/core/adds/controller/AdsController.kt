@@ -59,4 +59,15 @@ class AdsController(
         } ?: ApiResponse.error(GoneError())
     }
 
+    @GetMapping("ads/categories_of_ads")
+    fun getCategoriesOfAds(
+        @RequestParam(value = "searchText") searchText: String? = null,
+    ): ResponseEntity<*> {
+        if (searchText.isNullOrEmpty()) return ApiResponse.error(BadRequestError(message = "متن جست و جو الزامی است"))
+        return service.findCategoriesWithAdsCount(searchText).let {
+            ApiResponse.success(it)
+        }
+    }
+
+
 }

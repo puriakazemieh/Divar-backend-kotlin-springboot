@@ -1,8 +1,9 @@
 package com.kazemieh.divar.core.location.controller
 
-import com.kazemieh.divar.core.location.dto.CityResponse
 import com.kazemieh.divar.core.location.dto.toResponse
 import com.kazemieh.divar.core.location.service.CityService
+import com.kazemieh.divar.utils.response.ApiResponse
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -14,8 +15,8 @@ class CityController(
 ) {
 
     @GetMapping("city")
-    fun getCity(): List<CityResponse> {
-        return service.findAll().map { it.toResponse(false) }
+    fun getCity(): ResponseEntity<*> {
+        return ApiResponse.success(service.findAll().map { it.toResponse(false) })
     }
 
 }
