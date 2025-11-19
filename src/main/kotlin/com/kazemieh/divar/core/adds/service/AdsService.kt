@@ -9,6 +9,7 @@ import com.kazemieh.divar.core.adds.repository.AdsRepository
 import com.kazemieh.divar.core.category.service.CategoryService
 import com.kazemieh.divar.core.image.service.ImageService
 import com.kazemieh.divar.core.location.service.NeighborhoodService
+import com.kazemieh.divar.core.parameter.dto.answer.ParameterAnswerRequest
 import com.kazemieh.divar.core.parameter.dto.answer.toEntity
 import com.kazemieh.divar.core.parameter.service.ParameterAnswerService
 import com.kazemieh.divar.core.parameter.service.ParameterService
@@ -24,6 +25,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import kotlin.collections.get
 
 @Service
 class AdsService(
@@ -82,15 +84,44 @@ class AdsService(
         return repository.findByIdOrNull(id)
     }
 
-    fun findCategoriesWithAdsCount(searchTerm: String): List<CategoriesOfAds> {
-        return repository.findCategoriesWithAdsCount(searchTerm).map {
+    fun findCategoriesWithAdsCount(searchText: String, cityId: Long): List<CategoriesOfAds> {
+        return repository.findCategoriesWithAdsCount(searchText, cityId = cityId).map {
             CategoriesOfAds(
                 categoryName = it[0] as String,
                 categoryId = it[1] as Long,
                 adsCount = it[2] as Long,
-                adsTitle = it[3] as String,
+                adsTitle = it[3] as String
             )
         }
+    }
+
+    fun findAdsByFilter(
+        title: String?,
+        cityId: Long?,
+        categoryId: Long?,
+        neighborhoodId: Long?,
+        page: Int,
+        parameterAnswerRequests: List<ParameterAnswerRequest>?,
+        price: String?,
+        pageSize: Int = 20,
+    ): Page<Ads> {
+        val pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"))
+
+        // 10000 - 250000
+        val minPrice = price?.split(" - ")?.firstOrNull()
+        val maxPrice = price?.split(" - ")?.lastOrNull()
+
+        return repository.findAdsByFilter(
+            title = title,
+            cityId = cityId,
+            categoryId = categoryId,
+            minPrice = if (minPrice.isNullOrEmpty()) null else minPrice.toDouble(),
+            maxPrice = if (maxPrice.isNullOrEmpty()) null else maxPrice.toDouble(),
+            parametersIds = parameterAnswerRequests?.map { it.parameterId },
+            answers = parameterAnswerRequests?.map { it.answer },
+            neighborhoodId = neighborhoodId,
+            pageable = pageable
+        )
     }
 
 

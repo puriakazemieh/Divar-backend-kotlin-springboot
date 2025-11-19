@@ -1,8 +1,9 @@
 package com.kazemieh.divar.core.adds.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.kazemieh.divar.core.adds.dto.AdsRequest
+import com.kazemieh.divar.core.adds.dto.GetAdsRequest
+import com.kazemieh.divar.core.adds.dto.toAdsSummaryResponse
 import com.kazemieh.divar.core.adds.dto.toResponse
 import com.kazemieh.divar.core.adds.service.AdsService
 import com.kazemieh.divar.utils.response.*
@@ -18,54 +19,57 @@ class AdsController(
 ) {
 
     @PostMapping("ads")
-    fun create(
+    fun createAds(
         @RequestPart("images") images: List<MultipartFile>? = null,
         @RequestPart("ads") adsRequestString: String? = null,
         @RequestHeader("Authorization") token: String? = null,
     ): ResponseEntity<*> {
         if (token.isNullOrEmpty()) return ApiResponse.error(UnauthorizedError())
-        if (adsRequestString.isNullOrEmpty()) return ApiResponse.error(BadRequestError(message = "اطلاعات آگهی ارسال نشده است"))
-        val adsRequest = jacksonObjectMapper.readValue<AdsRequest>(adsRequestString)
-        val ads = service.save(adsRequest, token, images)
-        return ApiResponse.success(ads)
+        if (adsRequestString.isNullOrEmpty()) return ApiResponse.error(BadRequestError(message = "اطلاعات آگهی ارسال نشده است!"))
+        val adsRequest = jacksonObjectMapper.readValue(adsRequestString, AdsRequest::class.java)
+            ?: return ApiResponse.error(BadRequestError(message = "اطلاعات آگهی صحیح نمی باشد!"))
+
+        return service.save(adsRequest, token, images)
+
     }
 
-    @GetMapping("ads")
+    @PostMapping("ads/filter")
     fun getAds(
-        @RequestParam(value = "page", required = false) page: Int? = 0,
-        @RequestParam(value = "pageSize", required = false) pageSize: Int? = 20,
-        @RequestParam(value = "categoryId", required = false) categoryId: Long? = null,
-//        @RequestHeader("Authorization") token: String? = null
+        @RequestBody getAdsRequest: GetAdsRequest,
     ): ResponseEntity<*> {
-//        if (token.isNullOrEmpty()) return ApiResponse.error(UnauthorizedError())
-        if (categoryId == null) {
-            val adsPage = service.findAll(page ?: 0, pageSize ?: 20)
-            return ApiResponse.success(adsPage.toMyPage(adsPage.content.map { it?.toResponse() }))
-        } else {
-            val adsPage = service.findAll(page ?: 0, pageSize ?: 20, categoryId)
-            return ApiResponse.success(adsPage.toMyPage(adsPage.content.map { it?.toResponse() }))
-        }
+        val adsPage = service.findAdsByFilter(
+            title = getAdsRequest.searchText,
+            categoryId = getAdsRequest.categoryId,
+            cityId = getAdsRequest.cityId,
+            parameterAnswerRequests = getAdsRequest.parameters,
+            price = getAdsRequest.price,
+            neighborhoodId = getAdsRequest.neighborhoodId,
+            page = getAdsRequest.page
+        )
+        return ApiResponse.success(
+            adsPage.toMyPage(content = adsPage.content.map { it.toAdsSummaryResponse() })
+        )
     }
 
     @GetMapping("ads/detail")
-    fun getAds(
-        @RequestParam(value = "id") adsId: Long? = null,
-//        @RequestHeader("Authorization") token: String? = null
+    fun getAdsDetail(
+        @RequestParam("id") adsId: Long? = null
     ): ResponseEntity<*> {
-//        if (token.isNullOrEmpty()) return ApiResponse.error(UnauthorizedError())
-        if (adsId == null) return ApiResponse.error(BadRequestError(message = "آیدی آگهی ضروری است"))
+        if (adsId == null) return ApiResponse.error(BadRequestError(message = "ای دی آگهی ضروری است!"))
         return service.findById(adsId)?.let {
             ApiResponse.success(it.toResponse())
-        } ?: ApiResponse.error(GoneError())
+        } ?: return ApiResponse.error(GoneError())
     }
 
     @GetMapping("ads/categories_of_ads")
     fun getCategoriesOfAds(
-        @RequestParam(value = "searchText") searchText: String? = null,
+        @RequestParam("searchText") searchText: String? = null,
+        @RequestParam("cityId") cityId: Long? = null,
     ): ResponseEntity<*> {
-        if (searchText.isNullOrEmpty()) return ApiResponse.error(BadRequestError(message = "متن جست و جو الزامی است"))
-        return service.findCategoriesWithAdsCount(searchText).let {
-            ApiResponse.success(it)
+        if (searchText.isNullOrEmpty()) return ApiResponse.error(BadRequestError(message = "متن جستج الزامی است!"))
+        if (cityId == null) return ApiResponse.error(BadRequestError(message = "برای جستجو، ارسال شهر الزامی است!"))
+        service.findCategoriesWithAdsCount(searchText, cityId).let {
+            return ApiResponse.success(it)
         }
     }
 
