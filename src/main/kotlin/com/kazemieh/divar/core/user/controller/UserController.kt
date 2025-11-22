@@ -6,6 +6,7 @@ import com.kazemieh.divar.core.user.dto.toResponse
 import com.kazemieh.divar.core.user.service.UserService
 import com.kazemieh.divar.utils.response.ApiResponse
 import com.kazemieh.divar.utils.response.BadRequestError
+import com.kazemieh.divar.utils.response.InvalidCredentialsError
 import com.kazemieh.divar.utils.response.UnauthorizedError
 import com.kazemieh.divar.utils.security.JwtService
 import org.springframework.web.bind.annotation.*
@@ -17,13 +18,15 @@ class UserController(
     val jwtService: JwtService
 ) {
 
-    @PostMapping("user")
+    @PostMapping("user/register")
     fun register(
         @RequestBody userRequest: UserRequest? = null
     ): Any {
         return if (userRequest == null) ApiResponse.error(BadRequestError())
-        else if (service.findByEmail(userRequest.email) != null)
-            ApiResponse.error(BadRequestError(message = "کاربر با این ایمیل وجود داره"))
+        else if (service.findByMobile(userRequest.mobile) != null)
+            ApiResponse.error(BadRequestError(message = "کاربر با این شماره وجود داره"))
+        else if (userRequest.password != userRequest.repeatPassword)
+            ApiResponse.error(BadRequestError(message = "رمز عبور ها یکسان نیستند"))
         else {
             val user = userRequest.toEntity()
             val token = jwtService.generate(user)
@@ -33,12 +36,27 @@ class UserController(
         }
     }
 
+    @PostMapping("user/login")
+    fun login(
+        @RequestBody userRequest: UserRequest? = null
+    ): Any {
+        if (userRequest == null) return ApiResponse.error(BadRequestError())
+        val user = service.findByMobile(userRequest.mobile)
+        return if (user != null) {
+            val token = jwtService.generate(user)
+            val userResponse = user.toResponse(token)
+            ApiResponse.success(userResponse)
+        } else {
+            ApiResponse.error(InvalidCredentialsError())
+        }
+    }
+
     @PutMapping("user")
     fun updateUser(
         @RequestBody userRequest: UserRequest? = null
     ): Any {
         if (userRequest == null) return ApiResponse.error(BadRequestError())
-        return service.findByEmail(userRequest.email)?.let { dbUser ->
+        return service.findByMobile(userRequest.mobile)?.let { dbUser ->
             val user = userRequest.toEntity()
             val updateUser = service.save(user.copy(id = dbUser.id))
             ApiResponse.success(updateUser.toResponse(""))
